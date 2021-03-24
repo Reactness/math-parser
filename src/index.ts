@@ -6,5 +6,5 @@ const port = 5000;
 
 app.use(express.json()) 
 
-app.use('/data', mathController)
+app.use('/', mathController)
 app.listen(port, () => console.log(`Running on port ${port}`));
