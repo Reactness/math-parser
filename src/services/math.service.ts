@@ -53,8 +53,12 @@ export async function calculateExpressions(req, res, next) {
 export async function getResults(req, res, next) {
   try {
     fs.readFile("results.txt", "utf8", function (error, data) {
-      if (error) throw error;
-      let results = [];
+        let results = [];
+      if (error.code === 'ENOENT') {
+        return res.status(200).json({
+            results: results,
+          });
+      }
       // checking if data if file is not empty
       if (data) {
         // we need to replace whitespace with commas
