@@ -29,14 +29,15 @@ export async function calculateExpressions(req, res, next) {
         })
     }
 // then we can parse our expression by passing it to parse function 
-         const parsed = await parseExpression(exp)
+         const parsed = await parseByPlus(exp)
 // then we push each parsed expression to results array 
          results.push(parsed)
     }
 // sending successful response
     return res.status(200).json({
         status: 'success',
-        message: 'Results saved!'
+        message: 'Results saved!',
+        data: results
     })
 } catch (err) {
     next(err)
@@ -66,6 +67,70 @@ const split = (exp, operator) => {
     }
     return calcResult;
 };
+
+
+// multiply function
+const parseMultiplicationSeparatedExpression = (exp) => {
+    //splitting expression only by '*'
+    const numString = split(exp, '*');
+    const number = numString.map(toNum => {
+        if (toNum[0] == '(') {
+            const expr = toNum.substr(1, toNum.length - 2);
+           // call main function for expression in brackets
+            return parseByPlus(expr);
+        }
+        return +toNum;
+    });
+
+    // muiltiplying 
+    const initialValue = 1.0;
+    const result = number.reduce((acc, no) => acc * no, initialValue);
+    return result;
+};
+
+const parseByDivide = (exp: string) => {
+        // splitting by '-'
+    const numString = split(exp, '/')
+        // calling multiply function for next step of calculating
+    const number = numString.map(toNum => {
+        return parseMultiplicationSeparatedExpression(toNum)
+    })
+        // simply dividing numbers
+    const result = number.reduce((acc, no) => acc / no);
+    return result;   
+}
+// minus function that calls divide function
+const parseByMinus = (exp: string) => {
+        // splitting by '-'
+    const numString = split(exp, '-');
+        // calling divide function for next step of calculating
+    const number = numString.map(toNum => parseByDivide(toNum));
+    const initialValue = number[0];
+        // just calculating difference of numbers
+    const result = number.slice(1).reduce((acc, no) => acc - no, initialValue);
+    return result;
+};
+// * - + 
+
+const deleteSpaces = (exp: string) => {
+    return exp.replace(/ /g, '');
+}
+
+// plus (main) function that calls minus function
+const parseByPlus = (exp: string) => {
+    // deleting white spaces
+    const validExp =  deleteSpaces(exp)
+    // splitting by '+'
+    const numString = split(validExp, '+');
+    // calling minus function for next step of calculating
+    const number = numString.map(toNum => parseByMinus(toNum));
+    // just calculating sum of numbers
+    const initialValue = 0.0;
+    const result = number.reduce((acc, no) => acc + no, initialValue);
+    return result;
+};
+
+
 
 
 
