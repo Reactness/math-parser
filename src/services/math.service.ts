@@ -40,9 +40,32 @@ export async function calculateExpressions(req, res, next) {
     })
 } catch (err) {
     next(err)
-}
+} 
 }
 
+
+// we need to read expression chunk by chunk and return expression in brackets 
+const split = (exp, operator) => {
+    const calcResult = [];
+    let brackets = 0;
+    let currentCharacter = "";
+    for (let i = 0; i < exp.length; ++i) {
+        const chunk = exp[i];
+        if (chunk == '(') {
+            brackets++;
+        } else if (chunk == ')') {
+            brackets--;
+        }
+        if (brackets == 0 && operator == chunk) {
+            calcResult.push(currentCharacter);
+            currentCharacter = "";
+        } else currentCharacter += chunk;
+    }
+    if (currentCharacter != "") {
+        calcResult.push(currentCharacter);
+    }
+    return calcResult;
+};
 
 
 
